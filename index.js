@@ -1,0 +1,1 @@
+module.exports.BlockwareAPI = require('./src/BlockwareAPI')
