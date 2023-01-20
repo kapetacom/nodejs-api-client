@@ -1,7 +1,6 @@
 const FS = require("fs");
 const request = require("request");
 const jwt_decode = require('jwt-decode');
-const open = require('open');
 const ClusterConfiguration = require("@blockware/local-cluster-config");
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
@@ -97,8 +96,6 @@ class BlockwareAPI {
         if (handler?.onVerificationCode) {
             handler.onVerificationCode(verification_uri_complete)
         }
-
-        open(verification_uri_complete);
 
         if (!interval || interval < 5) {
             interval = 5;
