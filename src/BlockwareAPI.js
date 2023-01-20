@@ -16,6 +16,10 @@ class BlockwareAPI {
     }
 
     getClientId() {
+        if (process?.env?.BLOCKWARE_CLIENT_ID) {
+            return process?.env?.BLOCKWARE_CLIENT_ID;
+        }
+
         return this?._authInfo?.client_id || DEFAULT_CLIENT_ID;
     }
 
