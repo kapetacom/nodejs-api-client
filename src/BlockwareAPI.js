@@ -1,12 +1,11 @@
-const FS = require("fs");
-const request = require("request");
-const jwt_decode = require('jwt-decode');
-const ClusterConfiguration = require("@blockware/local-cluster-config");
+const FS = require('fs');
+const request = require('request');
+const jwt_decode = require('jwt-decode').default;
+const ClusterConfiguration = require('@blockware/local-cluster-config');
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
 
 class BlockwareAPI {
-
     constructor(authInfo) {
         this._authInfo = authInfo;
         this._userInfo = {};
@@ -36,7 +35,12 @@ class BlockwareAPI {
             return null;
         }
         //JWT Provided
-        return JSON.parse(Buffer.from(process.env.BLOCKWARE_CREDENTIALS_TOKEN,'base64').toString('ascii')).token;
+        return JSON.parse(
+            Buffer.from(
+                process.env.BLOCKWARE_CREDENTIALS_TOKEN,
+                'base64'
+            ).toString('ascii')
+        ).token;
     }
 
     hasToken() {
@@ -52,7 +56,9 @@ class BlockwareAPI {
 
     readToken() {
         if (FS.existsSync(this.getTokenPath())) {
-            this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
+            this._authInfo = JSON.parse(
+                FS.readFileSync(this.getTokenPath()).toString()
+            );
             this._userInfo = jwt_decode(this._authInfo.access_token);
         }
     }
@@ -70,18 +76,17 @@ class BlockwareAPI {
     }
 
     async createDeviceCode() {
-
         return this._send({
             url: `${this.getBaseUrl()}/oauth2/device/code`,
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
-                'accept': 'application/json'
+                accept: 'application/json',
             },
             method: 'POST',
             body: new URLSearchParams({
-                client_id: this.getClientId()
-            }).toString()
-        })
+                client_id: this.getClientId(),
+            }).toString(),
+        });
     }
 
     /**
@@ -90,44 +95,42 @@ class BlockwareAPI {
      * @returns {Promise<void>}
      */
     async doDeviceAuthentication(handler) {
-        let {
-            device_code,
-            verification_uri_complete,
-            expires_in,
-            interval,
-        } = await this.createDeviceCode();
+        let { device_code, verification_uri_complete, expires_in, interval } =
+            await this.createDeviceCode();
 
         if (handler?.onVerificationCode) {
-            handler.onVerificationCode(verification_uri_complete)
+            handler.onVerificationCode(verification_uri_complete);
         }
 
         if (!interval || interval < 5) {
             interval = 5;
         }
 
-        const expireTime = Date.now() + (expires_in * 1000);
+        const expireTime = Date.now() + expires_in * 1000;
         const me = this;
 
         return new Promise((resolve, reject) => {
-
             function tryAuthorize() {
                 setTimeout(async () => {
-
                     if (expireTime < Date.now()) {
                         //Expired
-                        reject(new Error('You failed to complete verification in time. Please try again'));
+                        reject(
+                            new Error(
+                                'You failed to complete verification in time. Please try again'
+                            )
+                        );
                         return;
                     }
 
                     try {
                         const token = await me.authorize({
-                            grant_type:'urn:ietf:params:oauth:grant-type:device_code',
-                            device_code
+                            grant_type:
+                                'urn:ietf:params:oauth:grant-type:device_code',
+                            device_code,
                         });
 
                         //We need to save the specific time
                         me.saveToken(token);
-
 
                         resolve();
                     } catch (e) {
@@ -156,7 +159,9 @@ class BlockwareAPI {
     }
 
     async getIdentity(identityId) {
-        return this._sendAuthed(`/identities/${encodeURIComponent(identityId)}`);
+        return this._sendAuthed(
+            `/identities/${encodeURIComponent(identityId)}`
+        );
     }
 
     async getCurrentMemberships() {
@@ -164,11 +169,17 @@ class BlockwareAPI {
     }
 
     async getMemberships(identityId) {
-        return this._sendAuthed(`/identities/${encodeURIComponent(identityId)}/memberships?type=organization`);
+        return this._sendAuthed(
+            `/identities/${encodeURIComponent(
+                identityId
+            )}/memberships?type=organization`
+        );
     }
 
     async getByHandle(handle) {
-        return this._sendAuthed(`/identities/by-handle/${encodeURIComponent(handle)}/as-member`);
+        return this._sendAuthed(
+            `/identities/by-handle/${encodeURIComponent(handle)}/as-member`
+        );
     }
 
     async removeContext() {
@@ -179,7 +190,7 @@ class BlockwareAPI {
     async switchContextTo(handle) {
         const membership = await this.getByHandle(handle);
         if (!membership) {
-            throw {error:'Organization not found'};
+            throw { error: 'Organization not found' };
         }
         this._authInfo.context = membership;
         this._updateToken();
@@ -192,12 +203,12 @@ class BlockwareAPI {
         return this._send({
             url,
             headers: {
-                'authorization': `Bearer ${accessToken}`,
-                'accept': 'application/json'
+                authorization: `Bearer ${accessToken}`,
+                accept: 'application/json',
             },
             method: method,
-            body
-        })
+            body,
+        });
     }
 
     async ensureAccessToken() {
@@ -205,18 +216,20 @@ class BlockwareAPI {
             let jwtToken = this.getJWTToken();
             const token = await this.authorize({
                 grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-                assertion: jwtToken
+                assertion: jwtToken,
             });
             this.saveToken(token);
             return;
         }
 
-        if (this._authInfo?.expire_time &&
+        if (
+            this._authInfo?.expire_time &&
             this._authInfo?.refresh_token &&
-            this._authInfo.expire_time < Date.now()) {
+            this._authInfo.expire_time < Date.now()
+        ) {
             const token = await this.authorize({
                 grant_type: 'refresh_token',
-                refresh_token: this._authInfo.refresh_token
+                refresh_token: this._authInfo.refresh_token,
             });
             this.saveToken(token);
         }
@@ -229,24 +242,22 @@ class BlockwareAPI {
     }
 
     async authorize(payload) {
-
         return this._send({
             url: `${this.getBaseUrl()}/oauth2/token`,
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
-                'accept': 'application/json'
+                accept: 'application/json',
             },
             method: 'POST',
             body: new URLSearchParams({
                 ...payload,
-                client_id: this.getClientId()
-            }).toString()
-        })
+                client_id: this.getClientId(),
+            }).toString(),
+        });
     }
 
     async _send(opts) {
         return new Promise((resolve, reject) => {
-
             request(opts, (err, response, responseBody) => {
                 if (err) {
                     reject(err);
@@ -258,7 +269,9 @@ class BlockwareAPI {
                         resolve(null);
                         return;
                     }
-                    const errorBody = responseBody ? JSON.parse(responseBody) : {error:'Not found', status: response.statusCode};
+                    const errorBody = responseBody
+                        ? JSON.parse(responseBody)
+                        : { error: 'Not found', status: response.statusCode };
                     reject(errorBody);
                     return;
                 }
@@ -268,7 +281,7 @@ class BlockwareAPI {
                 } catch (e) {
                     reject(e);
                 }
-            })
+            });
         });
     }
 
@@ -276,7 +289,7 @@ class BlockwareAPI {
         if (FS.existsSync(this.getTokenPath())) {
             FS.unlinkSync(this.getTokenPath());
             this._authInfo = {
-                base_url: this.getBaseUrl()
+                base_url: this.getBaseUrl(),
             };
             return true;
         }
@@ -288,18 +301,20 @@ class BlockwareAPI {
         this._authInfo = {
             ...token,
             client_id: this.getClientId(),
-            base_url:this.getBaseUrl(),
+            base_url: this.getBaseUrl(),
             context: null,
-            expire_time: Date.now() + token.expires_in
+            expire_time: Date.now() + token.expires_in,
         };
         this._userInfo = jwt_decode(this._authInfo.access_token);
         this._updateToken();
     }
 
     _updateToken() {
-        FS.writeFileSync(this.getTokenPath(), JSON.stringify(this._authInfo, null, 2));
+        FS.writeFileSync(
+            this.getTokenPath(),
+            JSON.stringify(this._authInfo, null, 2)
+        );
     }
-
 }
 
 module.exports = BlockwareAPI;
