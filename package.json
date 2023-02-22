@@ -8,5 +8,9 @@
         "@blockware/local-cluster-config": "<2",
         "jwt-decode": "^3.1.2",
         "request": "^2.88.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true
     }
 }
