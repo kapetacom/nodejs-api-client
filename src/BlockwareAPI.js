@@ -59,7 +59,6 @@ class BlockwareAPI {
             this._authInfo = JSON.parse(
                 FS.readFileSync(this.getTokenPath()).toString()
             );
-            console.log('Decoding things');
             this._userInfo = jwt_decode(this._authInfo.access_token);
         }
     }
