@@ -1,6 +1,6 @@
 {
     "name": "@blockware/nodejs-api-client",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "description": "Blockware API client for node",
     "main": "index.js",
     "license": "MIT",
