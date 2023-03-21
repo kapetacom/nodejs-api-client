@@ -1,1 +1,1 @@
-module.exports.BlockwareAPI = require('./src/BlockwareAPI')
+module.exports.KapetaAPI = require('./src/KapetaAPI')
