@@ -5,7 +5,7 @@ const ClusterConfiguration = require('@kapeta/local-cluster-config');
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
 
-class BlockwareAPI {
+class KapetaAPI {
     constructor(authInfo) {
         this._authInfo = authInfo;
         this._userInfo = {};
@@ -15,8 +15,8 @@ class BlockwareAPI {
     }
 
     getClientId() {
-        if (process?.env?.BLOCKWARE_CLIENT_ID) {
-            return process?.env?.BLOCKWARE_CLIENT_ID;
+        if (process?.env?.KAPETA_CLIENT_ID) {
+            return process?.env?.KAPETA_CLIENT_ID;
         }
 
         return this?._authInfo?.client_id || DEFAULT_CLIENT_ID;
@@ -27,17 +27,17 @@ class BlockwareAPI {
     }
 
     hasJWTToken() {
-        return !!process?.env?.BLOCKWARE_CREDENTIALS_TOKEN;
+        return !!process?.env?.KAPETA_CREDENTIALS_TOKEN;
     }
 
     getJWTToken() {
-        if (!process?.env?.BLOCKWARE_CREDENTIALS_TOKEN) {
+        if (!process?.env?.KAPETA_CREDENTIALS_TOKEN) {
             return null;
         }
         //JWT Provided
         return JSON.parse(
             Buffer.from(
-                process.env.BLOCKWARE_CREDENTIALS_TOKEN,
+                process.env.KAPETA_CREDENTIALS_TOKEN,
                 'base64'
             ).toString('ascii')
         ).token;
@@ -64,15 +64,15 @@ class BlockwareAPI {
     }
 
     getBaseUrl() {
-        if (process?.env?.BLOCKWARE_SERVICE_URL) {
-            return process.env.BLOCKWARE_SERVICE_URL;
+        if (process?.env?.KAPETA_SERVICE_URL) {
+            return process.env.KAPETA_SERVICE_URL;
         }
 
         if (this._authInfo?.base_url) {
             return this._authInfo?.base_url;
         }
 
-        return 'https://app.blockware.com';
+        return 'https://app.kapeta.com';
     }
 
     async createDeviceCode() {
@@ -317,4 +317,4 @@ class BlockwareAPI {
     }
 }
 
-module.exports = BlockwareAPI;
+module.exports = KapetaAPI;
