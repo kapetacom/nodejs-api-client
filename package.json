@@ -1,6 +1,6 @@
 {
     "name": "@kapeta/nodejs-api-client",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "description": "Kapeta API client for node",
     "main": "index.js",
     "license": "MIT",
