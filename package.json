@@ -4,6 +4,10 @@
     "description": "Kapeta API client for node",
     "main": "index.js",
     "license": "MIT",
+    "scripts": {
+        "build": "echo sure thing",
+        "test": "echo perfect"
+    },
     "dependencies": {
         "@kapeta/local-cluster-config": "<2",
         "jwt-decode": "^3.1.2",
