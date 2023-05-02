@@ -302,7 +302,7 @@ class KapetaAPI {
             ...token,
             client_id: this.getClientId(),
             base_url: this.getBaseUrl(),
-            context: null,
+            context: this._authInfo?.context || null,
             expire_time: Date.now() + token.expires_in,
         };
         this._userInfo = jwt_decode(this._authInfo.access_token);
