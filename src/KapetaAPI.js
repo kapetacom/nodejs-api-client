@@ -232,13 +232,18 @@ class KapetaAPI {
                 refresh_token: this._authInfo.refresh_token,
             });
             this.saveToken(token);
+            return;
+        }
+
+        if (!this._authInfo) {
+            throw new Error('Authentication not found');
         }
     }
 
     async getAccessToken() {
         await this.ensureAccessToken();
 
-        return this._authInfo.access_token;
+        return this._authInfo?.access_token;
     }
 
     async authorize(payload) {
