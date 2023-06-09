@@ -1,7 +1,7 @@
 const FS = require('fs');
 const request = require('request');
 const jwt_decode = require('jwt-decode').default;
-const ClusterConfiguration = require('@kapeta/local-cluster-config');
+const ClusterConfiguration = require('@kapeta/local-cluster-config').default;
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
 
