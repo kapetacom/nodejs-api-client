@@ -1,3 +1,10 @@
+## [0.1.2](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.1...v0.1.2) (2023-07-22)
+
+
+### Bug Fixes
+
+* Added types to API methods ([eb23168](https://github.com/kapetacom/nodejs-api-client/commit/eb231685def27748caced08536ff3d558be2a79f))
+
 ## [0.1.1](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.0...v0.1.1) (2023-07-22)
 
 
