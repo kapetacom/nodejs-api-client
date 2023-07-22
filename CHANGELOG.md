@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.0...v0.1.1) (2023-07-22)
+
+
+### Bug Fixes
+
+* Use specific npm ignore file ([7aea77f](https://github.com/kapetacom/nodejs-api-client/commit/7aea77ff32bbb26d307e11dc0cadccb18baff7a1))
+
 # [0.1.0](https://github.com/kapetacom/nodejs-api-client/compare/v0.0.13...v0.1.0) (2023-07-22)
 
 
