@@ -13,11 +13,40 @@ interface TokenInfo {
     expires_in: number;
 }
 
-interface Context {
+export interface Context {
     id: string;
     type: string;
     handle: string;
     scopes: string[];
+}
+export interface IdentityIdentifier {
+    id: string;
+    identifier: string;
+    type: string;
+    scopeId: string;
+    identityId: string;
+    verified: boolean;
+    primary: boolean;
+}
+
+export interface MemberIdentity {
+    scopes: string[];
+    identity: ExtendedIdentity;
+}
+
+export interface ExtendedIdentity {
+    id: string;
+    name: string;
+    type: string;
+    data: any;
+    handle: string;
+    email: string;
+    identifiers: IdentityIdentifier[];
+}
+
+export interface Membership {
+    scopes: string[];
+    identity: ExtendedIdentity;
 }
 
 export interface AuthPayload {
@@ -32,7 +61,7 @@ export interface AuthInfo {
     expire_time?: any;
     scope?: string;
     refresh_token?: string;
-    context?: Context | null;
+    context?: MemberIdentity | null;
     base_url: string;
 }
 
@@ -59,6 +88,13 @@ export interface RequestOptions {
 
 export interface DeviceAuthenticationHandler {
     onVerificationCode?: (redirectTo: string) => void;
+}
+
+interface DeviceAuthenticationResponse {
+    device_code: string;
+    verification_uri_complete: string;
+    expires_in: number;
+    interval: number;
 }
 
 export class KapetaAPI {
@@ -89,7 +125,7 @@ export class KapetaAPI {
         return !!process?.env?.KAPETA_CREDENTIALS_TOKEN;
     }
 
-    public getJWTToken() {
+    public getJWTToken(): string | null {
         if (!process?.env?.KAPETA_CREDENTIALS_TOKEN) {
             return null;
         }
@@ -101,14 +137,14 @@ export class KapetaAPI {
         if (this.hasJWTToken()) {
             return true;
         }
-        return this._authInfo && this._authInfo.access_token;
+        return this._authInfo?.access_token !== undefined;
     }
 
     public getTokenPath() {
         return AUTH_TOKEN;
     }
 
-    public readToken() {
+    private readToken() {
         if (FS.existsSync(this.getTokenPath())) {
             this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
             this._userInfo = jwt_decode(this._authInfo!.access_token!);
@@ -127,7 +163,7 @@ export class KapetaAPI {
         return 'https://app.kapeta.com';
     }
 
-    private async createDeviceCode() {
+    private async createDeviceCode(): Promise<DeviceAuthenticationResponse> {
         return this._send({
             url: `${this.getBaseUrl()}/oauth2/device/code`,
             headers: {
@@ -145,17 +181,18 @@ export class KapetaAPI {
      *
      */
     public async doDeviceAuthentication(handler?: DeviceAuthenticationHandler) {
-        let { device_code, verification_uri_complete, expires_in, interval } = await this.createDeviceCode();
+        let deviceCodeResponse = await this.createDeviceCode(),
+            interval = deviceCodeResponse.interval;
 
         if (handler?.onVerificationCode) {
-            handler.onVerificationCode(verification_uri_complete);
+            handler.onVerificationCode(deviceCodeResponse.verification_uri_complete);
         }
 
         if (!interval || interval < 5) {
             interval = 5;
         }
 
-        const expireTime = Date.now() + expires_in * 1000;
+        const expireTime = Date.now() + deviceCodeResponse.expires_in * 1000;
         const me = this;
 
         return new Promise<void>((resolve, reject) => {
@@ -170,7 +207,7 @@ export class KapetaAPI {
                     try {
                         const token = await me.authorize({
                             grant_type: 'urn:ietf:params:oauth:grant-type:device_code',
-                            device_code,
+                            device_code: deviceCodeResponse.device_code,
                         });
 
                         //We need to save the specific time
@@ -198,12 +235,12 @@ export class KapetaAPI {
         return this.getIdentity(this.getCurrentIdentityId());
     }
 
-    public getCurrentContext(): Context | null {
+    public getCurrentContext(): MemberIdentity | null {
         return this._authInfo?.context ?? null;
     }
 
     public async getIdentity(identityId: string) {
-        return this._sendAuthed(`/identities/${encodeURIComponent(identityId)}`);
+        return this._sendAuthed<ExtendedIdentity>(`/identities/${encodeURIComponent(identityId)}`);
     }
 
     public async getCurrentMemberships() {
@@ -211,11 +248,13 @@ export class KapetaAPI {
     }
 
     public async getMemberships(identityId: string) {
-        return this._sendAuthed(`/identities/${encodeURIComponent(identityId)}/memberships?type=organization`);
+        return this._sendAuthed<Membership[]>(
+            `/identities/${encodeURIComponent(identityId)}/memberships?type=organization`
+        );
     }
 
     public async getByHandle(handle: string) {
-        return this._sendAuthed(`/identities/by-handle/${encodeURIComponent(handle)}/as-member`);
+        return this._sendAuthed<MemberIdentity>(`/identities/by-handle/${encodeURIComponent(handle)}/as-member`);
     }
 
     public async removeContext() {
@@ -238,7 +277,7 @@ export class KapetaAPI {
         return membership;
     }
 
-    private async _sendAuthed(path: string, method: string = 'GET', body?: any) {
+    private async _sendAuthed<T = any>(path: string, method: string = 'GET', body?: any): Promise<T> {
         const url = `${this.getBaseUrl()}/api${path}`;
         return this.send({
             url,
@@ -248,7 +287,7 @@ export class KapetaAPI {
         });
     }
 
-    public async send<T = any>(opts: RequestOptions):Promise<T> {
+    public async send<T = any>(opts: RequestOptions): Promise<T> {
         if (!opts.headers) {
             opts.headers = {};
         }
