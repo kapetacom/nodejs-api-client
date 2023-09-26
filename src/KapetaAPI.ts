@@ -145,9 +145,13 @@ export class KapetaAPI {
     }
 
     private readToken() {
-        if (FS.existsSync(this.getTokenPath())) {
-            this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
-            this._userInfo = jwt_decode(this._authInfo!.access_token!);
+        try {
+            if (FS.existsSync(this.getTokenPath())) {
+                this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
+                this._userInfo = jwt_decode(this._authInfo!.access_token!);
+            }
+        } catch (e) {
+            console.log(`Failed to read token at ${this.getTokenPath()}. Got ${e}`);
         }
     }
 
