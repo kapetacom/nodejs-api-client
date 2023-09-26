@@ -1,3 +1,10 @@
+## [0.1.3](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.2...v0.1.3) (2023-09-26)
+
+
+### Bug Fixes
+
+* treat bad tokens in auth file as token not found ([#4](https://github.com/kapetacom/nodejs-api-client/issues/4)) ([42b1c9c](https://github.com/kapetacom/nodejs-api-client/commit/42b1c9cf7f1564c50c583642d794ba2127f83a4d))
+
 ## [0.1.2](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.1...v0.1.2) (2023-07-22)
 
 
