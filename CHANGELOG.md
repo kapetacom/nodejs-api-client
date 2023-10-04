@@ -1,3 +1,10 @@
+## [0.1.4](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.3...v0.1.4) (2023-10-04)
+
+
+### Bug Fixes
+
+* Gracefully handle invalid credentials in env ([#5](https://github.com/kapetacom/nodejs-api-client/issues/5)) ([9f56b77](https://github.com/kapetacom/nodejs-api-client/commit/9f56b770467eb8f59e9007d26a689431bc1f9d1f))
+
 ## [0.1.3](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.2...v0.1.3) (2023-09-26)
 
 
