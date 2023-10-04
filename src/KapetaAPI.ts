@@ -130,7 +130,12 @@ export class KapetaAPI {
             return null;
         }
         //JWT Provided
-        return JSON.parse(Buffer.from(process.env.KAPETA_CREDENTIALS_TOKEN, 'base64').toString('ascii')).token;
+        try {
+            return JSON.parse(Buffer.from(process.env.KAPETA_CREDENTIALS_TOKEN, 'base64').toString('ascii')).token;
+        } catch (e) {
+            console.log(`Failed to parse JWT token from KAPETA_CREDENTIALS_TOKEN. Got ${e}`);
+            return null;
+        }
     }
 
     public hasToken() {
