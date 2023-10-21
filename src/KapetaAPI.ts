@@ -7,6 +7,16 @@ const request = require('request');
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
 
+class APIError extends Error {
+    public status: number = 0;
+    public url: string = '';
+    public method: string = 'GET';
+
+    constructor(message: string) {
+        super(message);
+    }
+}
+
 interface TokenInfo {
     access_token: string;
     refresh_token?: string;
@@ -152,7 +162,19 @@ export class KapetaAPI {
     private readToken() {
         try {
             if (FS.existsSync(this.getTokenPath())) {
+                console.log(`Reading authentication from ${this.getTokenPath()}`);
                 this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
+                if (
+                    this._authInfo?.expire_time &&
+                    !this._authInfo?.refresh_token &&
+                    this._authInfo.expire_time < Date.now()
+                ) {
+                    console.log(`Available token was expired ${this.getTokenPath()}`);
+                    // Expired and no refresh token
+                    this.removeToken();
+                    this._authInfo = undefined;
+                    return;
+                }
                 this._userInfo = jwt_decode(this._authInfo!.access_token!);
             }
         } catch (e) {
@@ -371,7 +393,7 @@ export class KapetaAPI {
         });
     }
 
-    private async _send(opts: Options): Promise<any> {
+    private async _send(opts: Options & { url: string }): Promise<any> {
         return new Promise((resolve, reject) => {
             request(opts, (err: any, response: Response, responseBody: any) => {
                 if (err) {
@@ -384,10 +406,19 @@ export class KapetaAPI {
                         resolve(null);
                         return;
                     }
+
                     const errorBody = responseBody
                         ? JSON.parse(responseBody)
                         : { error: 'Not found', status: response.statusCode };
-                    reject(errorBody);
+
+                    const err = new APIError(errorBody.error || 'Unknown error');
+                    err.status = errorBody.status ?? response.statusCode;
+                    err.url = opts.url;
+                    if (opts.method) {
+                        err.method = opts.method;
+                    }
+
+                    reject(err);
                     return;
                 }
 
@@ -413,6 +444,10 @@ export class KapetaAPI {
     }
 
     public saveToken(token: TokenInfo) {
+        if (this._authInfo?.refresh_token && !token.refresh_token) {
+            // Keep the refresh token
+            token.refresh_token = this._authInfo.refresh_token;
+        }
         this._authInfo = {
             ...token,
             client_id: this.getClientId(),
@@ -420,6 +455,10 @@ export class KapetaAPI {
             context: this._authInfo?.context || null,
             expire_time: Date.now() + token.expires_in,
         };
+
+        if (!token.refresh_token) {
+            console.warn('No refresh token found in new token');
+        }
         this._userInfo = jwt_decode(this._authInfo.access_token!);
         this._updateToken();
     }
