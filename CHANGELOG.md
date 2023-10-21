@@ -1,3 +1,10 @@
+## [0.1.5](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.4...v0.1.5) (2023-10-21)
+
+
+### Bug Fixes
+
+* Preserve refresh token and improve error messages ([#6](https://github.com/kapetacom/nodejs-api-client/issues/6)) ([7967029](https://github.com/kapetacom/nodejs-api-client/commit/79670293bfd5bdfc70d19c2a7b19e717c9d0c1c6))
+
 ## [0.1.4](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.3...v0.1.4) (2023-10-04)
 
 
