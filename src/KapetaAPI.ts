@@ -1,3 +1,8 @@
+/**
+ * Copyright 2023 Kapeta Inc.
+ * SPDX-License-Identifier: MIT
+ */
+
 import * as FS from 'fs';
 import jwt_decode from 'jwt-decode';
 import ClusterConfiguration from '@kapeta/local-cluster-config';
