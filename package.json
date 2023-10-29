@@ -3,6 +3,11 @@
     "version": "0.1.5",
     "description": "Kapeta API client for node",
     "license": "MIT",
+    "author": {
+        "email": "engineering@kapeta.com",
+        "name": "Kapeta",
+        "url": "https://kapeta.com"
+    },
     "type": "commonjs",
     "exports": {
         ".": {
