@@ -1,3 +1,10 @@
+## [0.1.6](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.5...v0.1.6) (2023-11-16)
+
+
+### Bug Fixes
+
+* handle non-JSON in error responses ([#8](https://github.com/kapetacom/nodejs-api-client/issues/8)) ([4a198ea](https://github.com/kapetacom/nodejs-api-client/commit/4a198ea7305f5bdc020e3f31c13875257a944120))
+
 ## [0.1.5](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.4...v0.1.5) (2023-10-21)
 
 
