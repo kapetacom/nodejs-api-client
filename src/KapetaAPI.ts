@@ -412,9 +412,10 @@ export class KapetaAPI {
                         return;
                     }
 
-                    const errorBody = responseBody
-                        ? JSON.parse(responseBody)
-                        : { error: 'Not found', status: response.statusCode };
+                    let errorBody = { error: 'Unknown error', status: response.statusCode };
+                    try {
+                        errorBody = JSON.parse(responseBody);
+                    } catch (e) {}
 
                     const err = new APIError(errorBody.error || 'Unknown error');
                     err.status = errorBody.status ?? response.statusCode;
