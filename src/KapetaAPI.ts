@@ -167,7 +167,6 @@ export class KapetaAPI {
     private readToken() {
         try {
             if (FS.existsSync(this.getTokenPath())) {
-                console.log(`Reading authentication from ${this.getTokenPath()}`);
                 this._authInfo = JSON.parse(FS.readFileSync(this.getTokenPath()).toString());
                 if (
                     this._authInfo?.expire_time &&
@@ -347,6 +346,23 @@ export class KapetaAPI {
         });
     }
 
+    private async refreshAccessToken() {
+        if (!this._authInfo?.refresh_token) {
+            return false;
+        }
+
+        try {
+            const token = await this.authorize({
+                grant_type: 'refresh_token',
+                refresh_token: this._authInfo.refresh_token,
+            });
+            this.saveToken(token);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
     public async ensureAccessToken() {
         if (this.hasJWTToken()) {
             let jwtToken = this.getJWTToken();
@@ -364,11 +380,7 @@ export class KapetaAPI {
             this._authInfo.refresh_token &&
             this._authInfo.expire_time < Date.now()
         ) {
-            const token = await this.authorize({
-                grant_type: 'refresh_token',
-                refresh_token: this._authInfo.refresh_token,
-            });
-            this.saveToken(token);
+            await this.refreshAccessToken();
             return;
         }
 
@@ -398,9 +410,9 @@ export class KapetaAPI {
         });
     }
 
-    private async _send(opts: Options & { url: string }): Promise<any> {
+    private async _send(opts: Options & { url: string }, retryWithAuth: boolean = true): Promise<any> {
         return new Promise((resolve, reject) => {
-            request(opts, (err: any, response: Response, responseBody: any) => {
+            request(opts, async (err: any, response: Response, responseBody: any) => {
                 if (err) {
                     reject(err);
                     return;
@@ -416,6 +428,17 @@ export class KapetaAPI {
                     try {
                         errorBody = JSON.parse(responseBody);
                     } catch (e) {}
+
+                    if (retryWithAuth && errorBody.error === 'Token has expired') {
+                        console.log('Trying to refresh expired token...');
+                        if (await this.refreshAccessToken()) {
+                            // Retry once
+                            console.log('Retrying with new token');
+                            resolve(await this._send(opts, false));
+                            return;
+                        }
+                        console.log('Failed to refresh token');
+                    }
 
                     const err = new APIError(errorBody.error || 'Unknown error');
                     err.status = errorBody.status ?? response.statusCode;
