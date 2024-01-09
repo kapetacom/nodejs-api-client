@@ -1,3 +1,10 @@
+# [0.2.0](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.6...v0.2.0) (2024-01-09)
+
+
+### Features
+
+* Auto-refresh token if we get a token expired error ([#9](https://github.com/kapetacom/nodejs-api-client/issues/9)) ([812014b](https://github.com/kapetacom/nodejs-api-client/commit/812014b0557c40c820f3060d40630a353ac7c93a))
+
 ## [0.1.6](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.5...v0.1.6) (2023-11-16)
 
 
