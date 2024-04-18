@@ -1,9 +1,10 @@
 {
-    "extends": "@tsconfig/node18/tsconfig.json",
+    "extends": "@tsconfig/node20/tsconfig.json",
     "compilerOptions": {
         "outDir": "./dist",
         "declaration": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "lib": ["es2022", "dom", "dom.iterable"]
     },
     "exclude": ["node_modules", "types", "dist"],
     "include": ["index.ts", "src/**/*"]
