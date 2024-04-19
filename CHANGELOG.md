@@ -1,3 +1,17 @@
+# [1.0.0](https://github.com/kapetacom/nodejs-api-client/compare/v0.2.0...v1.0.0) (2024-04-19)
+
+
+### Features
+
+* migrate to fetch API for requests [CORE-2607] ([#10](https://github.com/kapetacom/nodejs-api-client/issues/10)) ([abe0157](https://github.com/kapetacom/nodejs-api-client/commit/abe01576f41d154620b1d3e30c100e963ab30c59))
+
+
+### BREAKING CHANGES
+
+* significantly changes the underlying request library,
+to a point where it will probably cause issues in some cases.
+Direct use of the send API might hit incompatiblities.
+
 # [0.2.0](https://github.com/kapetacom/nodejs-api-client/compare/v0.1.6...v0.2.0) (2024-01-09)
 
 
