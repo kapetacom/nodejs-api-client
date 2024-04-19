@@ -410,39 +410,39 @@ export class KapetaAPI {
     }
 
     private async _send(opts: RequestInit & { url: string }, retryWithAuth: boolean = true): Promise<any> {
-        return fetch(opts.url, opts).then(async (response) => {
-            if (response.status > 299) {
-                if (response.status === 404) {
-                    return null;
-                }
+        const response = await fetch(opts.url, opts);
 
-                let errorBody = { error: 'Unknown error', status: response.status };
-                try {
-                    errorBody = await response.json();
-                } catch (e) {}
-
-                if (retryWithAuth && errorBody.error === 'Token has expired') {
-                    console.log('Trying to refresh expired token...');
-                    if (await this.refreshAccessToken()) {
-                        // Retry once
-                        console.log('Retrying with new token');
-                        return await this._send(opts, false);
-                    }
-                    console.log('Failed to refresh token');
-                }
-
-                const err = new APIError(errorBody.error || 'Unknown error');
-                err.status = errorBody.status ?? response.status;
-                err.url = opts.url;
-                if (opts.method) {
-                    err.method = opts.method;
-                }
-
-                throw err;
+        if (response.status > 299) {
+            if (response.status === 404) {
+                return null;
             }
 
-            return response.json();
-        });
+            let errorBody = { error: 'Unknown error', status: response.status };
+            try {
+                errorBody = await response.json();
+            } catch (e) {}
+
+            if (retryWithAuth && errorBody.error === 'Token has expired') {
+                console.log('Trying to refresh expired token...');
+                if (await this.refreshAccessToken()) {
+                    // Retry once
+                    console.log('Retrying with new token');
+                    return await this._send(opts, false);
+                }
+                console.log('Failed to refresh token');
+            }
+
+            const err = new APIError(errorBody.error || 'Unknown error');
+            err.status = errorBody.status ?? response.status;
+            err.url = opts.url;
+            if (opts.method) {
+                err.method = opts.method;
+            }
+
+            throw err;
+        }
+
+        return response.json();
     }
 
     public removeToken() {
