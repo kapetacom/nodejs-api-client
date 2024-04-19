@@ -25,8 +25,8 @@
     "main": "./dist/cjs/index.js",
     "scripts": {
         "clean": "rm -rf ./dist",
-        "build:esm": "tsc --module esnext --outDir ./dist/esm && echo '{\"type\":\"module\"}' > ./dist/esm/package.json",
-        "build:cjs": "tsc --module commonjs --outDir ./dist/cjs && echo '{\"type\":\"commonjs\"}' > ./dist/cjs/package.json",
+        "build:esm": "tsc --outDir ./dist/esm && echo '{\"type\":\"module\"}' > ./dist/esm/package.json",
+        "build:cjs": "tsc --outDir ./dist/cjs && echo '{\"type\":\"commonjs\"}' > ./dist/cjs/package.json",
         "build": "npm run clean && npm run build:esm && npm run build:cjs",
         "prepublishOnly": "npm run build",
         "test": "echo perfect",
@@ -34,17 +34,16 @@
     },
     "dependencies": {
         "@kapeta/local-cluster-config": "<2",
-        "jwt-decode": "^3.1.2",
-        "request": "^2.88.2"
+        "cross-fetch": "^4.0.0",
+        "jwt-decode": "^3.1.2"
     },
     "devDependencies": {
         "@kapeta/prettier-config": "^0.6.0",
-        "@tsconfig/node18": "^18.2.0",
+        "@tsconfig/node20": "^20.1.4",
         "@types/jwt-decode": "^3.1.0",
-        "@types/node": "^20.4.4",
-        "@types/request": "^2.48.8",
+        "@types/node": "^20.12.7",
         "prettier": "^2.8.8",
-        "typescript": "^5.1.6"
+        "typescript": "^5.4.5"
     },
     "prettier": "@kapeta/prettier-config",
     "release": {

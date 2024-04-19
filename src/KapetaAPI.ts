@@ -6,8 +6,7 @@
 import * as FS from 'fs';
 import jwt_decode from 'jwt-decode';
 import ClusterConfiguration from '@kapeta/local-cluster-config';
-import type { Options, Response } from 'request';
-const request = require('request');
+import { fetch } from 'cross-fetch';
 
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';
@@ -208,7 +207,7 @@ export class KapetaAPI {
             method: 'POST',
             body: new URLSearchParams({
                 client_id: this.getClientId(),
-            }).toString(),
+            }),
         });
     }
 
@@ -340,7 +339,7 @@ export class KapetaAPI {
 
         return this._send({
             url: opts.url,
-            method: opts.method,
+            method: opts.method || 'GET',
             headers: opts.headers,
             body: opts.body,
         });
@@ -401,63 +400,49 @@ export class KapetaAPI {
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
                 accept: 'application/json',
-            },
+            } as any,
             method: 'POST',
             body: new URLSearchParams({
                 ...payload,
                 client_id: this.getClientId(),
-            }).toString(),
+            }) as any,
         });
     }
 
-    private async _send(opts: Options & { url: string }, retryWithAuth: boolean = true): Promise<any> {
-        return new Promise((resolve, reject) => {
-            request(opts, async (err: any, response: Response, responseBody: any) => {
-                if (err) {
-                    reject(err);
-                    return;
+    private async _send(opts: RequestInit & { url: string }, retryWithAuth: boolean = true): Promise<any> {
+        const response = await fetch(opts.url, opts);
+
+        if (response.status > 299) {
+            if (response.status === 404) {
+                return null;
+            }
+
+            let errorBody = { error: 'Unknown error', status: response.status };
+            try {
+                errorBody = await response.json();
+            } catch (e) {}
+
+            if (retryWithAuth && errorBody.error === 'Token has expired') {
+                console.log('Trying to refresh expired token...');
+                if (await this.refreshAccessToken()) {
+                    // Retry once
+                    console.log('Retrying with new token');
+                    return await this._send(opts, false);
                 }
+                console.log('Failed to refresh token');
+            }
 
-                if (response.statusCode > 299) {
-                    if (response.statusCode === 404) {
-                        resolve(null);
-                        return;
-                    }
+            const err = new APIError(errorBody.error || 'Unknown error');
+            err.status = errorBody.status ?? response.status;
+            err.url = opts.url;
+            if (opts.method) {
+                err.method = opts.method;
+            }
 
-                    let errorBody = { error: 'Unknown error', status: response.statusCode };
-                    try {
-                        errorBody = JSON.parse(responseBody);
-                    } catch (e) {}
+            throw err;
+        }
 
-                    if (retryWithAuth && errorBody.error === 'Token has expired') {
-                        console.log('Trying to refresh expired token...');
-                        if (await this.refreshAccessToken()) {
-                            // Retry once
-                            console.log('Retrying with new token');
-                            resolve(await this._send(opts, false));
-                            return;
-                        }
-                        console.log('Failed to refresh token');
-                    }
-
-                    const err = new APIError(errorBody.error || 'Unknown error');
-                    err.status = errorBody.status ?? response.statusCode;
-                    err.url = opts.url;
-                    if (opts.method) {
-                        err.method = opts.method;
-                    }
-
-                    reject(err);
-                    return;
-                }
-
-                try {
-                    resolve(JSON.parse(responseBody));
-                } catch (e) {
-                    reject(e);
-                }
-            });
-        });
+        return response.json();
     }
 
     public removeToken() {
