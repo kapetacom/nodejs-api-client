@@ -6,7 +6,6 @@
 import * as FS from 'fs';
 import jwt_decode from 'jwt-decode';
 import ClusterConfiguration from '@kapeta/local-cluster-config';
-import { fetch } from 'cross-fetch';
 
 const AUTH_TOKEN = ClusterConfiguration.getAuthenticationPath();
 const DEFAULT_CLIENT_ID = '63bbeafc39388b47691111ae';

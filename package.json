@@ -34,7 +34,6 @@
     },
     "dependencies": {
         "@kapeta/local-cluster-config": "<2",
-        "cross-fetch": "^4.0.0",
         "jwt-decode": "^3.1.2"
     },
     "devDependencies": {
