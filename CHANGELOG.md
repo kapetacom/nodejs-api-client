@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/kapetacom/nodejs-api-client/compare/v1.0.0...v1.0.1) (2024-04-25)
+
+
+### Bug Fixes
+
+* remove cross-fetch to remove punycode issue ([#11](https://github.com/kapetacom/nodejs-api-client/issues/11)) ([43995c2](https://github.com/kapetacom/nodejs-api-client/commit/43995c2fb893225dcb60bb498f6fd2f5b8d4c4a6))
+
 # [1.0.0](https://github.com/kapetacom/nodejs-api-client/compare/v0.2.0...v1.0.0) (2024-04-19)
 
 
